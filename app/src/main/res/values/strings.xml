@@ -1,3 +1,15 @@
 <resources>
-    <string name="app_name">sevsu_timetable</string>
+    <string name="app_name">Расписания СевГУ</string>
+    <string name="sel_week">Выбери неделю</string>
+    <string name="sel_group">Выбери свою группу</string>
+    <string name="sel_day">Выбери день недели</string>
+    <string name="btn_update">Скачать свежее расписание</string>
+    <array name="weekDays">
+        <item>Понедельник</item>
+        <item>Вторник</item>
+        <item>Среда</item>
+        <item>Четверг</item>
+        <item>Пятница</item>
+        <item>Суббота</item>
+    </array>
 </resources>
