@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Расписания СевГУ</string>
-    <string name="sel_week">Выбери неделю</string>
-    <string name="sel_group">Выбери свою группу</string>
-    <string name="sel_day">Выбери день недели</string>
-    <string name="btn_update">Скачать свежее расписание</string>
+    <string name="sel_week">Выберите уч .неделю</string>
+    <string name="sel_group">Выберите свою группу</string>
+    <string name="sel_day">Выберите день</string>
+    <string name="btn_update">Обновить расп. ИОНМО 1й сем. Маг.</string>
     <array name="weekDays">
         <item>Понедельник</item>
         <item>Вторник</item>

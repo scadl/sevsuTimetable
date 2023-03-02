@@ -11,104 +11,180 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="15dp">
-
-        <TextView
-            android:id="@+id/lblWeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/sel_week"
-            android:textAlignment="center" />
-
-        <Spinner
-            android:id="@+id/spnWeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/lblGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/sel_group"
-            android:textAlignment="center" />
-
-        <Spinner
-            android:id="@+id/spnGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/lblDay"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/sel_day"
-            android:textAlignment="center" />
-
-        <Spinner
-            android:id="@+id/spnDay"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:entries="@array/weekDays" />
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" >
-
-                    <TextView
-                        android:id="@+id/textView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TextView" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" >
-
-                    <TextView
-                        android:id="@+id/textView2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TextView" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" >
-
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TextView" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" >
-
-                    <TextView
-                        android:id="@+id/textView4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TextView" />
-                </TableRow>
-            </TableLayout>
-        </ScrollView>
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/btnUpdateFile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/btn_update" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/lblWeek"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sel_week" />
+
+            <Spinner
+                android:id="@+id/spnWeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/lblGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sel_group" />
+
+            <Spinner
+                android:id="@+id/spnGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/lblDay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sel_day" />
+
+            <Spinner
+                android:id="@+id/spnDay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/weekDays" />
+        </LinearLayout>
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:paddingTop="15dp"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/timeTable">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/timeRow">
+
+                    <TextView
+                        android:id="@+id/textView1a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:gravity="bottom"
+                        android:padding="5dp" />
+
+                    <TextView
+                        android:id="@+id/textView2a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="00:00"
+                        android:padding="5dp" />
+
+                    <TextView
+                        android:id="@+id/textView3a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:text="----------- --------------------- --------------  ---------------   --------------------"
+                        android:layout_weight="0.7"
+                        />
+
+                    <TextView
+                        android:id="@+id/textView4a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:text="--" />
+
+                    <TextView
+                        android:id="@+id/textView5a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:text="0-000" />
+
+            </LinearLayout>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/timeRow2">
+
+                    <TextView
+                        android:id="@+id/textView1a2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:padding="5dp" />
+
+                    <TextView
+                        android:id="@+id/textView2a2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="00:00"
+                        android:padding="5dp" />
+
+                    <TextView
+                        android:id="@+id/textView3a2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:text="----------- --------------------- --------------  ---------------   --------------------"
+                        android:layout_weight="0.7"
+                        />
+
+                    <TextView
+                        android:id="@+id/textView4a2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:text="--" />
+
+                    <TextView
+                        android:id="@+id/textView5a2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:text="0-000" />
+
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+
 
     </LinearLayout>
 
