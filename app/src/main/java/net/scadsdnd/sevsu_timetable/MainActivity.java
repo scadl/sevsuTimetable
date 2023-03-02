@@ -74,11 +74,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             @Override
             public void onClick(View view) {
 
-
-
-                int writePermCheck = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                int writePermCheck = ContextCompat.checkSelfPermission(
+                        MainActivity.this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                );
                 if(writePermCheck != PackageManager.PERMISSION_GRANTED){
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
+                    ActivityCompat.requestPermissions(
+                            MainActivity.this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE
+                    );
                 } else {
                     downloadFreshTT();
                 }
@@ -88,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         });
 
         curContext = this;
-
         loadWeeks();
 
     }
@@ -105,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         DownloadManager.Request request = new DownloadManager.Request(uri);
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fPathFile);
-        Long reference = downloadManager.enqueue(request);
+        downloadManager.enqueue(request);
 
         registerReceiver(downloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
@@ -117,7 +120,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         switch (requestCode) {
             case REQUEST_WRITE_EXTERNAL_STORAGE:
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    //TODO
                     downloadFreshTT();
                 }
                 break;
@@ -140,18 +142,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private XSSFWorkbook loadExcel(){
 
-        try (XSSFWorkbook wb = XSSFWorkbookFactory.createWorkbook(OPCPackage.create(fPathDir+"/"+fPathFile))) {
-            return wb;
+        try (OPCPackage wb = OPCPackage.open(fPathDir+"/"+fPathFile)) {
+            return new XSSFWorkbook(wb);
         } catch (Exception e) {
             Log.e("TAG", "onCreate error: " + e.getLocalizedMessage());
             Toast.makeText(this, "Error opening file: "+e.getLocalizedMessage(), Toast.LENGTH_LONG);
-
-            try(OPCPackage wb = OPCPackage.open(fPathDir+"/"+fPathFile)){
-                return new XSSFWorkbook(wb);
-            } catch (Exception e2){
-                Log.e("TAG", "onCreate 2 error: " + e2.getLocalizedMessage());
-                Toast.makeText(this, "Error opening file 2: "+e2.getLocalizedMessage(), Toast.LENGTH_LONG);
-            }
         }
 
         return null;
