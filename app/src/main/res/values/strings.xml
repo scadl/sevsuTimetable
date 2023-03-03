@@ -1,9 +1,11 @@
 <resources>
-    <string name="app_name">Расписания СевГУ</string>
+    <string name="app_name">СевГУ Расписания</string>
     <string name="sel_week">Выберите уч .неделю</string>
     <string name="sel_group">Выберите свою группу</string>
     <string name="sel_day">Выберите день</string>
-    <string name="btn_update">Обновить расп. ИОНМО 1й сем. Маг.</string>
+    <string name="lbl_update">Выберите своё распсание (ИОНМО)</string>
+    <string name="btn_update">V</string>
+    <string name="open_error">Файл расписания ненайден или поврежден. Скачиваю свежую копию с сервера университета.</string>
     <array name="weekDays">
         <item>Понедельник</item>
         <item>Вторник</item>
@@ -12,4 +14,23 @@
         <item>Пятница</item>
         <item>Суббота</item>
     </array>
+    <array name="semesters_title">
+        <!--<item>Магистратура 1й курс 1й семестр</item>-->
+        <item>Магистратура 1й курс 2й семестр</item>
+        <!--<item>Магистратура 2й курс 1й семестр</item>-->
+        <item>Магистратура 2й курс 2й семестр</item>
+    </array>
+    <array name="semesters_link">
+        <!--<item>https://www.sevsu.ru/univers/shedule/download.php?file=127LK4HFozZr1pL8N2gyEg%3D%3D</item>-->
+        <item>https://www.sevsu.ru/univers/shedule/download.php?file=7NEXmnGjONs4M1V8RZudWQ%3D%3D</item>
+        <!--<item>https://www.sevsu.ru/univers/shedule/download.php?file=xK8jtJJGLFfbedh9X5SLew%3D%3D</item>-->
+        <item>https://www.sevsu.ru/univers/shedule/download.php?file=J%2BuT1e%2F4YiCI%2BbenxeUt0g%3D%3D</item>
+    </array>
+    <array name="semesters_files">
+        <!--<item>ionmo_mag_k1s1.xlsx</item>-->
+        <item>ionmo_mag_k1s2.xlsx</item>
+        <!--<item>ionmo_mag_k2s1.xlsx</item>-->
+        <item>ionmo_mag_k2s2.xlsx</item>
+    </array>
+
 </resources>

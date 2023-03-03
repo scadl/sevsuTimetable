@@ -17,11 +17,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/btnUpdateFile"
+        <TextView
+            android:id="@+id/textViewlU"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/btn_update" />
+            android:text="@string/lbl_update" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Spinner
+                android:id="@+id/spinKurs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/cardview_default_elevation"
+                android:entries="@array/semesters_title"/>
+
+            <Button
+                android:id="@+id/btnUpdateFile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/cardview_default_elevation"
+                android:text="@string/btn_update" />
+
+        </LinearLayout>
 
 
         <LinearLayout
