@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -22,27 +23,26 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.Spinner;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbookFactory;
-import org.apache.xmlbeans.StringEnumAbstractBase;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -53,6 +53,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private String fPathDir;
     private String fPathFile;
     private String fDownloadLink;
+    private SharedPreferences shPf;
+    private timeTableType ttCurrent;
+    private int failedDownloads = 0;
+    private long ladDownloadId = 0;
+    private int curTtType = 0;
+    private Date curFdate;
+    private SimpleDateFormat simpFormat;
+
+    EditText txtUrl = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,10 +69,22 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ttCurrent = new timeTableType();
+        ttCurrent.loadType(1);
+
+        curFdate = Calendar.getInstance().getTime();
+        simpFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+
+        shPf = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
+
         curContext = this;
-        fPathDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        fPathFile = "sevsu_tt/" + getResources().getStringArray(R.array.semesters_files)[0];
-        fDownloadLink = getResources().getStringArray(R.array.semesters_link)[0];
+        fPathDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()+"/sevsu_tt/";
+        fPathFile = shPf.getString("last_file","");
+        fDownloadLink = shPf.getString("download_link", "");
+        curTtType = shPf.getInt("tt_type", 1);
+
+        txtUrl = (EditText) findViewById(R.id.edtDownloadLink);
+        txtUrl.setText(fDownloadLink);
 
         Spinner spinWeek = (Spinner) findViewById(R.id.spnWeek);
         spinWeek.setEnabled(false);
@@ -72,13 +93,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         Spinner spingDay = (Spinner) findViewById(R.id.spnDay);
         spingDay.setEnabled(false);
 
-        Spinner spinKurs = (Spinner) findViewById(R.id.spinKurs);
-        spinKurs.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        Spinner spinType = (Spinner) findViewById(R.id.spinType);
+        spinType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                fPathFile = "sevsu_tt/" + getResources().getStringArray(R.array.semesters_files)[i];
-                fDownloadLink = getResources().getStringArray(R.array.semesters_link)[i];
 
+                SharedPreferences.Editor shPfEdit = shPf.edit();
+                shPfEdit.putInt("tt_type",i);
+                shPfEdit.commit();
+
+                ttCurrent.loadType(i);
                 loadWeeks();
             }
 
@@ -88,17 +112,27 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        Button btnDownload = (Button) findViewById(R.id.btnUpdateFile);
+        ImageButton btnDownload = (ImageButton) findViewById(R.id.btnUpdateFile);
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                File fXLSX = new File(fPathDir + "/" + fPathFile);
-                if (fXLSX.exists()) {
-                    fXLSX.delete();
-                }
+                failedDownloads = 0;
+                fDownloadLink = txtUrl.getText().toString();
+                fPathFile = "ionmo_"+simpFormat.format(curFdate)+".xlsx";
 
                 loadWeeks();
+            }
+        });
+
+        ImageButton btnWeb = (ImageButton) findViewById(R.id.btnWebSource);
+        btnWeb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String url = "https://www.sevsu.ru/univers/shedule/";
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
             }
         });
 
@@ -107,23 +141,53 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private void downloadFreshTT(){
 
-        BroadcastReceiver downloadComplete = new BroadcastReceiver(){
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                loadWeeks();
+        try {
+            BroadcastReceiver downloadComplete = new BroadcastReceiver(){
+                @Override
+                public void onReceive(Context context, Intent intent) {
+
+                    SharedPreferences.Editor shPfEdit = shPf.edit();
+                    shPfEdit.putString("download_link",txtUrl.getText().toString());
+                    shPfEdit.putString("last_file","ionmo_"+simpFormat.format(curFdate)+".xlsx");
+                    shPfEdit.commit();
+
+                    failedDownloads = 0;
+
+                    loadWeeks();
+                }
+            };
+
+            File fXLSX = new File(fPathDir + fPathFile);
+            if (fXLSX.exists()) {
+                fXLSX.delete();
             }
-        };
 
-        DownloadManager downloadManager;
 
-        downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri uri = Uri.parse(fDownloadLink);
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fPathFile);
-        downloadManager.enqueue(request);
+            File mkDirHolder = new File(fPathDir.substring(0, fPathDir.length()-1));
+            mkDirHolder.mkdir();
 
-        registerReceiver(downloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+            DownloadManager downloadManager;
+
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(fDownloadLink));
+            request.setDescription(R.string.open_error + String.valueOf(failedDownloads));
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_ONLY_COMPLETION);
+            request.setDestinationUri(Uri.fromFile(new File(fPathDir + fPathFile)));
+            //request.setDestinationInExternalPublicDir(fPathDir, fPathFile);
+
+            downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            downloadManager.remove(ladDownloadId);
+            ladDownloadId = downloadManager.enqueue(request);
+
+            Log.i("TAG", "Downloading "+fDownloadLink+", to: "+fPathDir+fPathFile);
+
+            registerReceiver(downloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+        } catch (Exception e){
+            Toast.makeText(MainActivity.this, R.string.link_error, Toast.LENGTH_LONG).show();
+            Log.e("TAG", "downloadFreshTT: " + "Broken link URL or, "+ e.getLocalizedMessage());
+        }
+
+
     }
 
     private void ReqestWritePermAndDownload(){
@@ -157,14 +221,26 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     private XSSFWorkbook loadExcel(){
-        try (OPCPackage wb = OPCPackage.open(fPathDir+"/"+fPathFile)) {
+        try (OPCPackage wb = OPCPackage.open(fPathDir+fPathFile)) {
+
             return new XSSFWorkbook(wb);
 
         } catch (Exception e) {
-            Log.e("TAG!", "onCreate error: " + e.getLocalizedMessage());
 
-            Toast.makeText(this, R.string.open_error, Toast.LENGTH_LONG);
-            ReqestWritePermAndDownload();
+            if(failedDownloads > 5) {
+
+                Log.e("TAG!", "onCreate error: " + "To many download errors!");
+                Toast.makeText(MainActivity.this, R.string.link_error, Toast.LENGTH_LONG).show();
+
+            } else {
+
+                failedDownloads += 1;
+
+                Log.e("TAG!", "onCreate error: " + e.getLocalizedMessage());
+                Toast.makeText(MainActivity.this, R.string.open_error + failedDownloads, Toast.LENGTH_SHORT);
+
+                ReqestWritePermAndDownload();
+            }
 
         }
         return null;
@@ -207,6 +283,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private void SpinerPopultor(@IdRes int id, List<String> data, int level){
 
+        LinearLayout ttTable = (LinearLayout) findViewById(R.id.timeTable);
+        ttTable.removeAllViews();
+
+        Spinner spDay = (Spinner) findViewById(R.id.spnDay);
+        spDay.setSelection(0);
+
         ArrayAdapter<String> wkAdapt = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data);
         wkAdapt.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -244,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         if (wb!=null) {
 
             XSSFSheet txSh = wb.getSheetAt(i);
-            XSSFRow txRw = txSh.getRow(3);
+            XSSFRow txRw = txSh.getRow(ttCurrent.groupsString);
             if (txRw != null) {
 
                 int dataColsNum = txRw.getLastCellNum();
@@ -301,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             TextView[] tbItem = new TextView[8];
 
-            for(int jCol = 2; jCol<7; jCol++) {
+            for(int jCol = 2; jCol< ttCurrent.dayWidthInCells; jCol++) {
 
                 tbItem[jCol] = new TextView(curContext);
                 LinearLayout.LayoutParams lyParam = new LinearLayout.LayoutParams(
@@ -357,15 +439,15 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             ttTable.addView(ttStringBuild(outHeader, -1));
 
-            for(int iStr=0; iStr<=7; iStr++) {
+            for(int iStr=0; iStr<=ttCurrent.dayWidthInCells; iStr++) {
 
-                int rowDayStart = 8*(indDay);
-                XSSFRow txRw = txSh.getRow(6+rowDayStart + iStr);
+                int rowDayStart = (ttCurrent.dayHeightInCelss+1)*indDay;
+                XSSFRow txRw = txSh.getRow(ttCurrent.groupsString+3+rowDayStart + iStr);
 
                 boolean lessNotEmpty = false;
-                String[] ouText = new String[8];
+                String[] ouText = new String[ttCurrent.dayHeightInCelss+1];
 
-                for(int jCol = 2; jCol<7; jCol++) {
+                for(int jCol = 2; jCol< ttCurrent.dayHeightInCelss; jCol++) {
 
                     XSSFCell txCl = txRw.getCell(gpPos.get(indGp) + jCol);
 

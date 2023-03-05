@@ -26,37 +26,72 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            >
 
-            <Spinner
-                android:id="@+id/spinKurs"
+            <EditText
+                android:id="@+id/edtDownloadLink"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/cardview_default_elevation"
-                android:entries="@array/semesters_title"/>
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="https://sevsu.ru/" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/btnUpdateFile"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/cardview_default_elevation"
-                android:text="@string/btn_update" />
+                android:padding="7dp"
+                android:src="@android:drawable/ic_menu_more"
+                android:text="Download" />
+
+            <ImageButton
+                android:id="@+id/btnWebSource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/cardview_default_elevation"
+                android:padding="7dp"
+                android:src="@android:drawable/ic_menu_set_as"
+                android:text="Web Site" />
 
         </LinearLayout>
-
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+
+            <TextView
+                android:id="@+id/textViewlTypeL"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lblTTType"
+                android:width="@dimen/spinWidth" />
+
+            <Spinner
+                android:id="@+id/spinType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/cardview_default_elevation"
+                android:entries="@array/semesters_title"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:padding="5dp">
 
             <TextView
                 android:id="@+id/lblWeek"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/sel_week" />
+                android:text="@string/sel_week"
+                android:width="@dimen/spinWidth"/>
 
             <Spinner
                 android:id="@+id/spnWeek"
@@ -67,14 +102,15 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:padding="5dp">
 
             <TextView
                 android:id="@+id/lblGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/sel_group" />
+                android:text="@string/sel_group"
+                android:width="@dimen/spinWidth"/>
 
             <Spinner
                 android:id="@+id/spnGroup"
@@ -85,14 +121,15 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:padding="5dp">
 
             <TextView
                 android:id="@+id/lblDay"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/sel_day" />
+                android:text="@string/sel_day"
+                android:width="@dimen/spinWidth"/>
 
             <Spinner
                 android:id="@+id/spnDay"
