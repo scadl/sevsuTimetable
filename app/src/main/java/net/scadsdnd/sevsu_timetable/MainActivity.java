@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 failedDownloads += 1;
 
                 Log.e("TAG!", "onCreate error: " + e.getLocalizedMessage());
-                Toast.makeText(MainActivity.this, R.string.open_error + failedDownloads, Toast.LENGTH_SHORT);
+                Toast.makeText(MainActivity.this, R.string.link_download + failedDownloads, Toast.LENGTH_SHORT);
 
                 ReqestWritePermAndDownload();
             }
@@ -453,7 +453,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
                     switch (jCol) {
                         case 4:
-
                             String[] txLessData = txCl.getStringCellValue().split(",");
                             if (txLessData.length>=2) {
                                 String[] txTut = txLessData[1].split("\\(");
@@ -470,10 +469,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                             ouText[jCol] = txCl.toString();
                             break;
                     }
-
-
-
-
                 }
 
                 if(lessNotEmpty) {

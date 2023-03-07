@@ -4,8 +4,9 @@
     <string name="sel_group">Выберите свою группу</string>
     <string name="sel_day">Выберите день</string>
     <string name="lbl_update">Прямая ссылка на ваше распсание</string>
-    <string name="open_error">Файл расписания ненайден или поврежден. Скачиваю свежую копию с сервера университета. Попытка: </string>
-    <string name="link_error">Похоже ваша ссылка на расписание не верна. Убедитесь в правильности введеного адреса.</string>
+    <string name="open_error">Файл расписания ненайден или поврежден. </string>
+    <string name="link_error">Ваша ссылка на расписание не верна. Убедитесь в правильности введеного адреса.</string>
+    <string name="link_download">Выполняю скачиввание расписания. Попытка: </string>
     <string name="lblTTType">Тип файла расписания</string>
     <array name="weekDays">
         <item>Понедельник</item>
@@ -17,6 +18,16 @@
     </array>
     <array name="semesters_title">
         <item>Тип 1, Ст.С.4, Д.8х8</item>
+    </array>
+    <array name="lessons_fullTime">
+        <item>08:30 – 10:00</item>
+        <item>10:10 – 11:40</item>
+        <item>11:50 – 13:20</item>
+        <item>14:00 – 15:30</item>
+        <item>15:40 – 17:10</item>
+        <item>17:20 – 18:50</item>
+        <item>19:00 – 20:30</item>
+        <item>20:40 – 22:10</item>
     </array>
 
 </resources>
