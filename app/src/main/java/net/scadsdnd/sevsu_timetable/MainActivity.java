@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 fDownloadLink = txtUrl.getText().toString();
                 fPathFile = "ionmo_"+simpFormat.format(curFdate)+".xlsx";
 
-                loadWeeks();
+                downloadFreshTT();
             }
         });
 
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             DownloadManager downloadManager;
 
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(fDownloadLink));
-            request.setDescription(R.string.open_error + String.valueOf(failedDownloads));
+            request.setDescription(R.string.link_download + String.valueOf(failedDownloads));
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_ONLY_COMPLETION);
             request.setDestinationUri(Uri.fromFile(new File(fPathDir + fPathFile)));
             //request.setDestinationInExternalPublicDir(fPathDir, fPathFile);
@@ -223,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private XSSFWorkbook loadExcel(){
         try (OPCPackage wb = OPCPackage.open(fPathDir+fPathFile)) {
 
+            Toast.makeText(MainActivity.this, R.string.load_ok, Toast.LENGTH_LONG).show();
             return new XSSFWorkbook(wb);
 
         } catch (Exception e) {
@@ -230,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             if(failedDownloads > 5) {
 
                 Log.e("TAG!", "onCreate error: " + "To many download errors!");
-                Toast.makeText(MainActivity.this, R.string.link_error, Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, R.string.open_error, Toast.LENGTH_LONG).show();
 
             } else {
 
@@ -247,14 +248,21 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     private void loadWeeks(){
-        XSSFWorkbook wb = loadExcel();
-        if (wb!=null) {
-            int numSheets = wb.getNumberOfSheets();
-            List<String> wkData = new ArrayList<>();
-            for (int iS = 0; iS < numSheets; iS++) {
-                wkData.add(wb.getSheetName(iS));
+
+        try {
+
+            XSSFWorkbook wb = loadExcel();
+            if (wb != null) {
+                int numSheets = wb.getNumberOfSheets();
+                List<String> wkData = new ArrayList<>();
+                for (int iS = 0; iS < numSheets; iS++) {
+                    wkData.add(wb.getSheetName(iS));
+                }
+                SpinerPopultor(R.id.spnWeek, wkData, 0);
             }
-            SpinerPopultor(R.id.spnWeek, wkData, 0);
+        } catch (Exception e){
+            Toast.makeText(MainActivity.this, R.string.link_error, Toast.LENGTH_LONG).show();
+            Log.e("TAG", "loadWeeks: "+e.getLocalizedMessage());
         }
 
         // https://poi.apache.org/apidocs/5.0/
@@ -322,27 +330,32 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private void LoadSecondLevel(int i){
 
-        XSSFWorkbook wb = loadExcel();
-        if (wb!=null) {
+        try {
 
-            XSSFSheet txSh = wb.getSheetAt(i);
-            XSSFRow txRw = txSh.getRow(ttCurrent.groupsString);
-            if (txRw != null) {
+            XSSFWorkbook wb = loadExcel();
+            if (wb != null) {
 
-                int dataColsNum = txRw.getLastCellNum();
-                List<String> gpData = new ArrayList<>();
+                XSSFSheet txSh = wb.getSheetAt(i);
+                XSSFRow txRw = txSh.getRow(ttCurrent.groupsString);
+                if (txRw != null) {
 
-                for (int iC = 0; iC < dataColsNum; iC++) {
-                    if (txRw.getCell(iC).toString() != "") {
-                        gpData.add(txRw.getCell(iC).getStringCellValue());
-                        gpPos.add((short) iC);
+                    int dataColsNum = txRw.getLastCellNum();
+                    List<String> gpData = new ArrayList<>();
+
+                    for (int iC = 0; iC < dataColsNum; iC++) {
+                        if (txRw.getCell(iC).toString() != "") {
+                            gpData.add(txRw.getCell(iC).getStringCellValue());
+                            gpPos.add((short) iC);
+                        }
                     }
+                    SpinerPopultor(R.id.spnGroup, gpData, 1);
+                    //Log.i("tag", String.valueOf(txRw.getLastCellNum()));
                 }
-                SpinerPopultor(R.id.spnGroup, gpData, 1);
-                //Log.i("tag", String.valueOf(txRw.getLastCellNum()));
             }
+        } catch (Exception e){
+            Toast.makeText(MainActivity.this, R.string.link_error, Toast.LENGTH_LONG).show();
+            Log.e("TAG", "loadWeeks: "+e.getLocalizedMessage());
         }
-
     }
 
     private void LoadFinal(int indGp){
@@ -422,59 +435,71 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     private void loadDayData(int indGp, int indDay){
-        XSSFWorkbook wb = loadExcel();
-        if (wb!=null) {
 
-            LinearLayout ttTable = (LinearLayout) findViewById(R.id.timeTable);
-            ttTable.removeAllViews();
+        try {
 
-            XSSFSheet txSh = wb.getSheetAt(currentPage);
+            XSSFWorkbook wb = loadExcel();
+            if (wb != null) {
 
-            String[] outHeader = new String[7];
-            outHeader[2] = "<i>№</i>";
-            outHeader[3] = "<i>Нач.</i>";
-            outHeader[4] = "<i>Дисциплина и преподавтель</i>";
-            outHeader[5] = "<i>Тип</i>";
-            outHeader[6] = "<i>Ауд.</i>";
+                LinearLayout ttTable = (LinearLayout) findViewById(R.id.timeTable);
+                ttTable.removeAllViews();
 
-            ttTable.addView(ttStringBuild(outHeader, -1));
+                XSSFSheet txSh = wb.getSheetAt(currentPage);
 
-            for(int iStr=0; iStr<=ttCurrent.dayWidthInCells; iStr++) {
+                String[] outHeader = new String[7];
+                for (int hi = 2; hi < 7; hi++) {
+                    outHeader[hi] = "<i>" + getResources().getStringArray(R.array.tb_names)[hi - 2] + "</i>";
+                }
 
-                int rowDayStart = (ttCurrent.dayHeightInCelss+1)*indDay;
-                XSSFRow txRw = txSh.getRow(ttCurrent.groupsString+3+rowDayStart + iStr);
+                ttTable.addView(ttStringBuild(outHeader, -1));
 
-                boolean lessNotEmpty = false;
-                String[] ouText = new String[ttCurrent.dayHeightInCelss+1];
+                for (int iStr = 0; iStr <= ttCurrent.dayWidthInCells; iStr++) {
 
-                for(int jCol = 2; jCol< ttCurrent.dayHeightInCelss; jCol++) {
+                    int rowDayStart = (ttCurrent.dayHeightInCelss + 1) * indDay;
+                    XSSFRow txRw = txSh.getRow(ttCurrent.groupsString + 3 + rowDayStart + iStr);
 
-                    XSSFCell txCl = txRw.getCell(gpPos.get(indGp) + jCol);
+                    int lesson_id = 0;
+                    boolean lessNotEmpty = false;
+                    String[] ouText = new String[ttCurrent.dayHeightInCelss + 1];
 
-                    switch (jCol) {
-                        case 4:
-                            String[] txLessData = txCl.getStringCellValue().split(",");
-                            if (txLessData.length>=2) {
-                                String[] txTut = txLessData[1].split("\\(");
-                                ouText[jCol] = "<b>"+txLessData[0] + "</b><br>" + txTut[0];
-                                lessNotEmpty = true;
-                            }
-                            Log.d("TAG", "loadDayData: "+txLessData.length);
-                            break;
-                        case 2:
-                            // Lesson number
-                            ouText[jCol] = "<i><span style='color:blue'>" + String.valueOf(Math.round(txCl.getNumericCellValue())) + "</span></i>";
-                            break;
-                        default:
-                            ouText[jCol] = txCl.toString();
-                            break;
+                    for (int jCol = 2; jCol < ttCurrent.dayHeightInCelss; jCol++) {
+
+                        XSSFCell txCl = txRw.getCell(gpPos.get(indGp) + jCol);
+
+                        switch (jCol) {
+                            case 4:
+                                // Lesson name and tutor
+                                String[] txLessData = txCl.getStringCellValue().split(",");
+                                if (txLessData.length >= 2) {
+                                    String[] txTut = txLessData[1].split("\\(");
+                                    ouText[jCol] = "<b>" + txLessData[0] + "</b><br>" + txTut[0];
+                                    lessNotEmpty = true;
+                                }
+                                Log.d("TAG", "loadDayData: " + txLessData.length);
+                                break;
+                            case 2:
+                                // Lesson number
+                                ouText[jCol] = "<i><span style='color:blue'>" + String.valueOf(Math.round(txCl.getNumericCellValue())) + "</span></i>";
+                                lesson_id = (int) txCl.getNumericCellValue();
+                                break;
+                            case 3:
+                                // Lesson time
+                                ouText[jCol] = getResources().getStringArray(R.array.lessons_fullTime)[lesson_id - 1].replace("-", "<br>");
+                                break;
+                            default:
+                                ouText[jCol] = txCl.toString();
+                                break;
+                        }
+                    }
+
+                    if (lessNotEmpty) {
+                        ttTable.addView(ttStringBuild(ouText, iStr));
                     }
                 }
-
-                if(lessNotEmpty) {
-                    ttTable.addView(ttStringBuild(ouText, iStr));
-                }
             }
+        } catch (Exception e){
+            Toast.makeText(MainActivity.this, R.string.link_error, Toast.LENGTH_LONG).show();
+            Log.e("TAG", "loadWeeks: "+e.getLocalizedMessage());
         }
     }
 }

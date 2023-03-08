@@ -10,8 +10,8 @@ android {
         applicationId "net.scadsdnd.sevsu_timetable"
         minSdk 26
         targetSdk 33
-        versionCode 1
-        versionName "2.0"
+        versionCode 3
+        versionName "от расвета до заката"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
