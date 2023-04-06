@@ -1,22 +1,33 @@
 package net.scadsdnd.sevsu_timetable;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.IdRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
@@ -37,6 +48,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,7 +74,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private Date curFdate;
     private SimpleDateFormat simpFormat;
 
+    Uri uriStream;
+
     EditText txtUrl = null;
+    TextView txtStatus = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         txtUrl = (EditText) findViewById(R.id.edtDownloadLink);
         txtUrl.setText(fDownloadLink);
 
+        txtStatus = (TextView) findViewById(R.id.tvStatus);
+
         Spinner spinWeek = (Spinner) findViewById(R.id.spnWeek);
         spinWeek.setEnabled(false);
         Spinner spinGrp  = (Spinner) findViewById(R.id.spnGroup);
@@ -103,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 shPfEdit.commit();
 
                 ttCurrent.loadType(i);
-                loadWeeks();
+
             }
 
             @Override
@@ -117,11 +135,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             @Override
             public void onClick(View view) {
 
-                failedDownloads = 0;
-                fDownloadLink = txtUrl.getText().toString();
-                fPathFile = "ionmo_"+simpFormat.format(curFdate)+".xlsx";
-
-                loadWeeks();
+                downloadFreshTT();
             }
         });
 
@@ -136,112 +150,72 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        loadWeeks();
+        downloadFreshTT();
     }
 
     private void downloadFreshTT(){
 
         try {
-            BroadcastReceiver downloadComplete = new BroadcastReceiver(){
-                @Override
-                public void onReceive(Context context, Intent intent) {
-
-                    SharedPreferences.Editor shPfEdit = shPf.edit();
-                    shPfEdit.putString("download_link",txtUrl.getText().toString());
-                    shPfEdit.putString("last_file","ionmo_"+simpFormat.format(curFdate)+".xlsx");
-                    shPfEdit.commit();
-
-                    failedDownloads = 0;
-
-                    loadWeeks();
-                }
-            };
-
-            File fXLSX = new File(fPathDir + fPathFile);
-            if (fXLSX.exists()) {
-                fXLSX.delete();
-            }
 
 
-            File mkDirHolder = new File(fPathDir.substring(0, fPathDir.length()-1));
-            mkDirHolder.mkdir();
+            // Open file with user selected app
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("*/*");
+            intent = Intent.createChooser(intent, "Chose File");
 
-            DownloadManager downloadManager;
+            ActivityResultLauncher<Intent> startActivityIntent = registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    new ActivityResultCallback<ActivityResult>() {
+                        @Override
+                        public void onActivityResult(ActivityResult result) {
 
-            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(fDownloadLink));
-            request.setDescription(R.string.open_error + String.valueOf(failedDownloads));
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_ONLY_COMPLETION);
-            request.setDestinationUri(Uri.fromFile(new File(fPathDir + fPathFile)));
-            //request.setDestinationInExternalPublicDir(fPathDir, fPathFile);
+                            if (result.getResultCode() == Activity.RESULT_OK){
 
-            downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-            downloadManager.remove(ladDownloadId);
-            ladDownloadId = downloadManager.enqueue(request);
+                                SharedPreferences.Editor shPfEdit = shPf.edit();
+                                shPfEdit.putString("download_link", txtUrl.getText().toString());
+                                shPfEdit.putString("last_file","ionmo_"+simpFormat.format(curFdate)+".xlsx");
+                                shPfEdit.commit();
 
-            Log.i("TAG", "Downloading "+fDownloadLink+", to: "+fPathDir+fPathFile);
+                                failedDownloads = 0;
 
-            registerReceiver(downloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                                // ActivityResult 1st getData() - intent, 2nd - file URI
+                                uriStream = result.getData().getData();
+                                loadWeeks();
+
+                            }
+                            Log.w("tag_intent_data", result.toString() + result.getData().toString() );
+                        }
+                    }
+            );
+
+            startActivityIntent.launch(intent);
 
         } catch (Exception e){
-            Toast.makeText(MainActivity.this, R.string.link_error, Toast.LENGTH_LONG).show();
+            txtStatus.setText(R.string.link_error);
             Log.e("TAG", "downloadFreshTT: " + "Broken link URL or, "+ e.getLocalizedMessage());
         }
 
 
     }
 
-    private void ReqestWritePermAndDownload(){
-        int writePermCheck = ContextCompat.checkSelfPermission(
-                MainActivity.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-        );
-        if(writePermCheck != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(
-                    MainActivity.this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE
-            );
-        } else {
-            downloadFreshTT();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_WRITE_EXTERNAL_STORAGE:
-                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    downloadFreshTT();
-                }
-                break;
-
-            default:
-                break;
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
     private XSSFWorkbook loadExcel(){
-        try (OPCPackage wb = OPCPackage.open(fPathDir+fPathFile)) {
 
-            return new XSSFWorkbook(wb);
+        // content://com.android.providers.downloads.documents/document/11
+        // fPathDir+fPathFile
+        try {
+            InputStream dataStream = getContentResolver().openInputStream(uriStream);
+            try (OPCPackage wb = OPCPackage.open(dataStream)) {
 
-        } catch (Exception e) {
+                return new XSSFWorkbook(wb);
 
-            if(failedDownloads > 5) {
+            } catch (Exception e) {
 
-                Log.e("TAG!", "onCreate error: " + "To many download errors!");
-                Toast.makeText(MainActivity.this, R.string.link_error, Toast.LENGTH_LONG).show();
+                Log.e("TAG!", "onCreate error: " + "Can't open XLSX file. " + e.getLocalizedMessage());
+                txtStatus.setText(R.string.link_error);
 
-            } else {
-
-                failedDownloads += 1;
-
-                Log.e("TAG!", "onCreate error: " + e.getLocalizedMessage());
-                Toast.makeText(MainActivity.this, R.string.link_download + failedDownloads, Toast.LENGTH_SHORT);
-
-                ReqestWritePermAndDownload();
             }
-
+        } catch (Exception e){
+            Log.e("TAG!", "onCreate error: " + "Can't open XLSX file. " + e.getLocalizedMessage());
         }
         return null;
     }

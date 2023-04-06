@@ -242,6 +242,11 @@
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
 
 
 
