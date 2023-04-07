@@ -63,21 +63,38 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 10000;
     private int currentPage = 0;
     private Context curContext;
-    private String fPathDir;
-    private String fPathFile;
-    private String fDownloadLink;
     private SharedPreferences shPf;
     private timeTableType ttCurrent;
-    private int failedDownloads = 0;
-    private long ladDownloadId = 0;
     private int curTtType = 0;
     private Date curFdate;
     private SimpleDateFormat simpFormat;
-
+    private String dateDay;
     Uri uriStream;
 
-    EditText txtUrl = null;
-    TextView txtStatus = null;
+    TextView txtUrl, txtStatus, txtDate = null;
+
+    // https://poi.apache.org/apidocs/5.0/
+    // String text = "";
+    // XSSFSheet txSh = wb.getSheet("неделя 9(уч.н.27)");
+    // XSSFRow txRw = txSh.getRow(3);
+    // XSSFCell txCl = txRw.getCell(21); // Группа : c
+    // text = txCl.toString();
+
+    // Col 21 - 27 = Группа : И/м-22-2-о's props
+    // Col 21 - weekday
+    // col 22 - date
+    // col 23 - lesson number
+    // col 24 - start time
+    // col 25 - lesson title, tutor, room
+    // col 26 - lesson type
+    // col 27 - Room number
+    // Row 3 - Group name - Группа : И/м-22-2-о
+    // Row 6 - 13 - Monday, all lessons
+    // Row 14 - 21 - Tuesday, all lessons
+    // Row 22 - 29 - Wensday, all lessons
+    // Row 30 - 37 - Thusday, all lessons
+    // Row 38 - 45 - Friday, all lessons
+    // Row 46 - 53 - Saturday, all lessons
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,15 +111,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         shPf = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
 
         curContext = this;
-        fPathDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()+"/sevsu_tt/";
-        fPathFile = shPf.getString("last_file","");
-        fDownloadLink = shPf.getString("download_link", "");
+        uriStream = Uri.parse(shPf.getString("last_file",""));
         curTtType = shPf.getInt("tt_type", 1);
 
-        txtUrl = (EditText) findViewById(R.id.edtDownloadLink);
-        txtUrl.setText(fDownloadLink);
-
+        txtUrl = (TextView) findViewById(R.id.edtDownloadLink);
         txtStatus = (TextView) findViewById(R.id.tvStatus);
+        txtDate = (TextView) findViewById(R.id.tvLastDate);
+
+        txtUrl.setText(R.string.lblOpen);
 
         Spinner spinWeek = (Spinner) findViewById(R.id.spnWeek);
         spinWeek.setEnabled(false);
@@ -115,13 +131,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         spinType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
                 SharedPreferences.Editor shPfEdit = shPf.edit();
                 shPfEdit.putInt("tt_type",i);
                 shPfEdit.commit();
 
                 ttCurrent.loadType(i);
-
             }
 
             @Override
@@ -134,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 downloadFreshTT();
             }
         });
@@ -150,72 +163,63 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        downloadFreshTT();
     }
+
+    // This is modern version of method Internt.startActivtyForResult()
+    // ActivityResultLuncher have to be declred out of onCreate scope, to avoid rsumed-state errors
+    ActivityResultLauncher<Intent> startActivityIntent = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+
+                    if (result.getResultCode() == Activity.RESULT_OK){
+
+                        // ActivityResult 1st getData() - intent, 2nd - selected file URI
+                        uriStream = result.getData().getData();
+
+                        SharedPreferences.Editor shPfEdit = shPf.edit();
+                        shPfEdit.putString("last_file",uriStream.toString());
+                        shPfEdit.commit();
+
+                        loadWeeks();
+
+                    }
+                    Log.w("tag_intent_data", result.toString() + result.getData().toString() );
+                }
+            }
+    );
 
     private void downloadFreshTT(){
 
-        try {
-
-
             // Open file with user selected app
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.setType("*/*");
             intent = Intent.createChooser(intent, "Chose File");
 
-            ActivityResultLauncher<Intent> startActivityIntent = registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-
-                            if (result.getResultCode() == Activity.RESULT_OK){
-
-                                SharedPreferences.Editor shPfEdit = shPf.edit();
-                                shPfEdit.putString("download_link", txtUrl.getText().toString());
-                                shPfEdit.putString("last_file","ionmo_"+simpFormat.format(curFdate)+".xlsx");
-                                shPfEdit.commit();
-
-                                failedDownloads = 0;
-
-                                // ActivityResult 1st getData() - intent, 2nd - file URI
-                                uriStream = result.getData().getData();
-                                loadWeeks();
-
-                            }
-                            Log.w("tag_intent_data", result.toString() + result.getData().toString() );
-                        }
-                    }
-            );
-
             startActivityIntent.launch(intent);
-
-        } catch (Exception e){
-            txtStatus.setText(R.string.link_error);
-            Log.e("TAG", "downloadFreshTT: " + "Broken link URL or, "+ e.getLocalizedMessage());
-        }
-
 
     }
 
     private XSSFWorkbook loadExcel(){
 
-        // content://com.android.providers.downloads.documents/document/11
-        // fPathDir+fPathFile
         try {
+            Log.w("path", uriStream.toString());
             InputStream dataStream = getContentResolver().openInputStream(uriStream);
             try (OPCPackage wb = OPCPackage.open(dataStream)) {
 
+                txtStatus.setText(R.string.load_ok);
                 return new XSSFWorkbook(wb);
 
             } catch (Exception e) {
 
-                Log.e("TAG!", "onCreate error: " + "Can't open XLSX file. " + e.getLocalizedMessage());
-                txtStatus.setText(R.string.link_error);
+                Log.e("TAG!", "onCreate error: " + "Can't create XLSX object from file. " + e.getLocalizedMessage());
+                txtStatus.setText(R.string.broken_file);
 
             }
         } catch (Exception e){
             Log.e("TAG!", "onCreate error: " + "Can't open XLSX file. " + e.getLocalizedMessage());
+            txtStatus.setText(R.string.open_error);
         }
         return null;
     }
@@ -229,30 +233,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 wkData.add(wb.getSheetName(iS));
             }
             SpinerPopultor(R.id.spnWeek, wkData, 0);
+        } else {
+            Log.e ("empty_data", "Got empty file object");
         }
 
-        // https://poi.apache.org/apidocs/5.0/
-        // String text = "";
-        // XSSFSheet txSh = wb.getSheet("неделя 9(уч.н.27)");
-        // XSSFRow txRw = txSh.getRow(3);
-        // XSSFCell txCl = txRw.getCell(21); // Группа : c
-        // text = txCl.toString();
-
-        // Col 21 - 27 = Группа : И/м-22-2-о's props
-        // Col 21 - weekday
-        // col 22 - date
-        // col 23 - lesson number
-        // col 24 - start time
-        // col 25 - lesson title, tutor, room
-        // col 26 - lesson type
-        // col 27 - Room number
-        // Row 3 - Group name - Группа : И/м-22-2-о
-        // Row 6 - 13 - Monday, all lessons
-        // Row 14 - 21 - Tuesday, all lessons
-        // Row 22 - 29 - Wensday, all lessons
-        // Row 30 - 37 - Thusday, all lessons
-        // Row 38 - 45 - Friday, all lessons
-        // Row 46 - 53 - Saturday, all lessons
     }
 
     private void SpinerPopultor(@IdRes int id, List<String> data, int level){
@@ -421,11 +405,18 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 boolean lessNotEmpty = false;
                 String[] ouText = new String[ttCurrent.dayHeightInCelss+1];
 
-                for(int jCol = 2; jCol< ttCurrent.dayHeightInCelss; jCol++) {
+                for(int jCol = 1; jCol< ttCurrent.dayHeightInCelss; jCol++) {
 
                     XSSFCell txCl = txRw.getCell(gpPos.get(indGp) + jCol);
 
                     switch (jCol) {
+                        case 1:
+                            String lastDate = txCl.toString();
+                            if(lastDate.trim()!=""){
+                                txtDate.setText(lastDate);
+                            }
+                            Log.e("date", lastDate);
+                            break;
                         case 4:
                             String[] txLessData = txCl.getStringCellValue().split(",");
                             if (txLessData.length>=2) {

@@ -29,13 +29,16 @@
             android:orientation="horizontal"
             >
 
-            <EditText
+            <TextView
                 android:id="@+id/edtDownloadLink"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ems="10"
-                android:inputType="textPersonName"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:paddingVertical="15dp"
+                android:paddingHorizontal="5dp"
                 android:text="https://sevsu.ru/" />
 
             <ImageButton
@@ -136,7 +139,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:entries="@array/weekDays" />
+
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvLastDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="00.00.0000"
+            android:textAlignment="center"
+            android:textColor="@color/purple_700"
+            android:padding="5dp"
+            android:textStyle="bold" />
 
         <ScrollView
             android:layout_width="wrap_content"
@@ -244,8 +258,10 @@
         </ScrollView>
         <TextView
             android:id="@+id/tvStatus"
+            android:gravity="bottom|center"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:text=""
             />
 
 

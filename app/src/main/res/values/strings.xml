@@ -4,12 +4,12 @@
     <string name="sel_group">Выберите свою группу</string>
     <string name="sel_day">Выберите день</string>
     <string name="lbl_update">Прямая ссылка на ваше распсание</string>
-    <string name="open_error">Файл расписания не найден или поврежден. </string>
-    <string name="link_error">Ваша ссылка на расписание не верна. Исправьте пожалуйста.</string>
-    <string name="link_download">Выполняю скачиввание расписания. Попытка: </string>
+    <string name="open_error">Не удалось открыть файл.</string>
+    <string name="broken_file">Файл расписания поврежден. </string>
+    <string name="link_error">Файл не выбран, или путь не поддерживается.</string>
     <string name="load_ok">Файл расписания загружен успешно.</string>
-    <string name="load_err">Файл расписания поврежден или неправильного формата. Перекачайте пожалуйста.</string>
     <string name="lblTTType">Тип файла расписания</string>
+    <string name="lblOpen">Выберите прдварительно скачанный файл распиания</string>
     <array name="weekDays">
         <item>Понедельник</item>
         <item>Вторник</item>
