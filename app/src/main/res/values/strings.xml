@@ -3,7 +3,7 @@
     <string name="sel_week">Выберите уч .неделю</string>
     <string name="sel_group">Выберите свою группу</string>
     <string name="sel_day">Выберите день</string>
-    <string name="lbl_update">Прямая ссылка на ваше распсание</string>
+    <string name="lbl_update">Свойства загруженного файла распсианий</string>
     <string name="open_error">Не удалось открыть файл.</string>
     <string name="broken_file">Файл расписания поврежден. </string>
     <string name="link_error">Файл не выбран, или путь не поддерживается.</string>
@@ -19,7 +19,9 @@
         <item>Суббота</item>
     </array>
     <array name="semesters_title">
-        <item>Тип 1, Ст.С.4, Д.8х8</item>
+        <item>Тип 1, Магистры, Ст.С.4, Д.8х8</item>
+        <item>Тип 2, Бакалавры (3 подгруппы), Ст.С.4, Д.8х13</item>
+        <item>Тип 3, Бакалавры (2 подгруппы), Ст.С.4, Д.8х10</item>
     </array>
     <array name="lessons_fullTime">
         <item>08:30-10:00</item>

@@ -12,6 +12,16 @@ public class timeTableType {
                 dayHeightInCelss = 7;
                 dayWidthInCells = 7;
                 break;
+            case 2:
+                groupsString = 3;
+                dayHeightInCelss = 7;
+                dayWidthInCells = 12;
+                break;
+            case 3:
+                groupsString = 3;
+                dayHeightInCelss = 7;
+                dayWidthInCells = 9;
+                break;
         }
     }
 }

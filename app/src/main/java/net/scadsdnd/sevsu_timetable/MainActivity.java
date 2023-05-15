@@ -50,6 +50,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -166,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     // This is modern version of method Internt.startActivtyForResult()
-    // ActivityResultLuncher have to be declred out of onCreate scope, to avoid rsumed-state errors
+    // ActivityResultLuncher have to be declared out of onCreate scope, to avoid resumed-state errors
     ActivityResultLauncher<Intent> startActivityIntent = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -185,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         loadWeeks();
 
                     }
-                    Log.w("tag_intent_data", result.toString() + result.getData().toString() );
+                    Log.w("tag_intent_data", result.getData().toString() );
                 }
             }
     );
@@ -207,6 +208,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             Log.w("path", uriStream.toString());
             InputStream dataStream = getContentResolver().openInputStream(uriStream);
             try (OPCPackage wb = OPCPackage.open(dataStream)) {
+
+                File fXML = new File(uriStream.toString());
+                Date fModDate = new Date(fXML.lastModified());
+                String fileProp = android.text.format.DateFormat.format("dd-mm-yyyy HH:mm", fModDate).toString();
+                txtUrl.setText(fileProp);
 
                 txtStatus.setText(R.string.load_ok);
                 return new XSSFWorkbook(wb);
