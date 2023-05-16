@@ -206,13 +206,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         try {
             Log.w("path", uriStream.toString());
-            InputStream dataStream = getContentResolver().openInputStream(uriStream);
-            try (OPCPackage wb = OPCPackage.open(dataStream)) {
 
-                File fXML = new File(uriStream.toString());
-                Date fModDate = new Date(fXML.lastModified());
-                String fileProp = android.text.format.DateFormat.format("dd-mm-yyyy HH:mm", fModDate).toString();
-                txtUrl.setText(fileProp);
+            File fXML = new File(PathUtils.getPath(curContext, uriStream));
+            Date fModDate = new Date(fXML.lastModified());
+            // Java date format https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html
+            String fileProp = android.text.format.DateFormat.format("dd-MM-yyyy HH:mm", fModDate).toString();
+            txtUrl.setText(fileProp + " [" +fXML.getName()+"]");
+
+            InputStream dataStream = getContentResolver().openInputStream(uriStream);
+
+            try (OPCPackage wb = OPCPackage.open(fXML)) {
 
                 txtStatus.setText(R.string.load_ok);
                 return new XSSFWorkbook(wb);
@@ -408,6 +411,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 int rowDayStart = (ttCurrent.dayHeightInCelss+1)*indDay;
                 XSSFRow txRw = txSh.getRow(ttCurrent.groupsString+3+rowDayStart + iStr);
 
+                int lesson_id = 1;
                 boolean lessNotEmpty = false;
                 String[] ouText = new String[ttCurrent.dayHeightInCelss+1];
 
@@ -417,6 +421,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
                     switch (jCol) {
                         case 1:
+                            // Current date in scope
                             String lastDate = txCl.toString();
                             if(lastDate.trim()!=""){
                                 txtDate.setText(lastDate);
@@ -424,6 +429,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                             Log.e("date", lastDate);
                             break;
                         case 4:
+                            // Lesson name and tutor
                             String[] txLessData = txCl.getStringCellValue().split(",");
                             if (txLessData.length>=2) {
                                 String[] txTut = txLessData[1].split("\\(");
@@ -435,6 +441,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                         case 2:
                             // Lesson number
                             ouText[jCol] = "<i><span style='color:blue'>" + String.valueOf(Math.round(txCl.getNumericCellValue())) + "</span></i>";
+                            lesson_id = (int) txCl.getNumericCellValue();
+                            break;
+                        case 3:
+                            // Lesson time
+                            ouText[jCol] = getResources().getStringArray(R.array.lessons_fullTime)[lesson_id - 1].replace("-", "<br>");
                             break;
                         default:
                             ouText[jCol] = txCl.toString();

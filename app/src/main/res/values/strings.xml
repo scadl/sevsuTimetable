@@ -9,7 +9,7 @@
     <string name="link_error">Файл не выбран, или путь не поддерживается.</string>
     <string name="load_ok">Файл расписания загружен успешно.</string>
     <string name="lblTTType">Тип файла расписания</string>
-    <string name="lblOpen">Выберите прдварительно скачанный файл распиания</string>
+    <string name="lblOpen">[Выберите файл распиания]</string>
     <array name="weekDays">
         <item>Понедельник</item>
         <item>Вторник</item>
