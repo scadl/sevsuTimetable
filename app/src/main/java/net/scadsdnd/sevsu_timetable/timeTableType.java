@@ -1,11 +1,13 @@
 package net.scadsdnd.sevsu_timetable;
 
 public class timeTableType {
-    public int groupsString = 3;
-    public int dayWidthInCells = 0;
-    public int dayHeightInCelss = 7;
+    public int groupsString;
+    public int dayWidthInCells;
+    public int dayHeightInCelss;
 
     public void loadType(int type){
+        groupsString = 3;
+        dayHeightInCelss = 7;
         switch (type) {
             case 1:
                 dayWidthInCells = 7;

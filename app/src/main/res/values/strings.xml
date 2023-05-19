@@ -10,6 +10,8 @@
     <string name="load_ok">Файл расписания загружен успешно.</string>
     <string name="lblTTType">Тип файла расписания</string>
     <string name="lblOpen">[Выберите файл распиания]</string>
+    <string name="lblErrorInCells">Ошибки в структуре таблицы. Возможен не точный вывод расписаний.</string>
+    <string name="emptyWorkbok">Выбранный файл пуст. Четние не возможно.</string>
     <array name="weekDays">
         <item>Понедельник</item>
         <item>Вторник</item>

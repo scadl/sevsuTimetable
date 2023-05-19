@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         });
         spinType.setEnabled(false);
         spinType.setClickable(false);
+        ttCurrent.loadType(1);
 
         ImageButton btnDownload = (ImageButton) findViewById(R.id.btnUpdateFile);
         btnDownload.setOnClickListener(new View.OnClickListener() {
@@ -209,9 +210,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             String fileProp = android.text.format.DateFormat.format("dd-MM-yyyy HH:mm", fModDate).toString();
             txtUrl.setText(fileProp + " [" +fXML.getName()+"]");
 
+            // Despite the fact the nput Steream a slower, it requires less permisions on modern Android
             InputStream dataStream = getContentResolver().openInputStream(uriStream);
 
-            try (OPCPackage wb = OPCPackage.open(fXML)) {
+            try (OPCPackage wb = OPCPackage.open(dataStream)) {
 
                 txtStatus.setText(R.string.load_ok);
                 return new XSSFWorkbook(wb);
@@ -240,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             SpinerPopultor(R.id.spnWeek, wkData, 0);
         } else {
             Log.e ("empty_data", "Got empty file object");
+            txtStatus.setText(R.string.emptyWorkbok);
         }
 
     }
@@ -411,42 +414,47 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 boolean lessNotEmpty = false;
                 String[] ouText = new String[ttCurrent.dayHeightInCelss+1];
 
-                for(int jCol = 1; jCol< ttCurrent.dayHeightInCelss; jCol++) {
+                try {
+                    for (int jCol = 1; jCol < ttCurrent.dayHeightInCelss; jCol++) {
 
-                    XSSFCell txCl = txRw.getCell(gpPos.get(indGp) + jCol);
+                        XSSFCell txCl = txRw.getCell(gpPos.get(indGp) + jCol);
 
-                    switch (jCol) {
-                        case 1:
-                            // Current date in scope
-                            String lastDate = txCl.toString();
-                            if(lastDate.trim()!=""){
-                                txtDate.setText(lastDate);
-                            }
-                            Log.e("date", lastDate);
-                            break;
-                        case 4:
-                            // Lesson name and tutor
-                            String[] txLessData = txCl.getStringCellValue().split(",");
-                            if (txLessData.length>=2) {
-                                String[] txTut = txLessData[1].split("\\(");
-                                ouText[jCol] = "<b>"+txLessData[0] + "</b><br>" + txTut[0];
-                                lessNotEmpty = true;
-                            }
-                            Log.d("TAG", "loadDayData: "+txLessData.length);
-                            break;
-                        case 2:
-                            // Lesson number
-                            ouText[jCol] = "<i><span style='color:blue'>" + String.valueOf(Math.round(txCl.getNumericCellValue())) + "</span></i>";
-                            lesson_id = (int) txCl.getNumericCellValue();
-                            break;
-                        case 3:
-                            // Lesson time
-                            ouText[jCol] = getResources().getStringArray(R.array.lessons_fullTime)[lesson_id - 1].replace("-", "<br>");
-                            break;
-                        default:
-                            ouText[jCol] = txCl.toString();
-                            break;
+                        switch (jCol) {
+                            case 1:
+                                // Current date in scope
+                                String lastDate = txCl.toString();
+                                if (lastDate.trim() != "") {
+                                    txtDate.setText(lastDate);
+                                }
+                                Log.e("date", lastDate);
+                                break;
+                            case 4:
+                                // Lesson name and tutor
+                                String[] txLessData = txCl.getStringCellValue().split(",");
+                                if (txLessData.length >= 2) {
+                                    String[] txTut = txLessData[1].split("\\(");
+                                    ouText[jCol] = "<b>" + txLessData[0] + "</b><br>" + txTut[0];
+                                    lessNotEmpty = true;
+                                }
+                                Log.d("TAG", "loadDayData: " + txLessData.length);
+                                break;
+                            case 2:
+                                // Lesson number
+                                ouText[jCol] = "<i><span style='color:blue'>" + String.valueOf(Math.round(txCl.getNumericCellValue())) + "</span></i>";
+                                lesson_id = (int) txCl.getNumericCellValue();
+                                break;
+                            case 3:
+                                // Lesson time
+                                ouText[jCol] = getResources().getStringArray(R.array.lessons_fullTime)[lesson_id - 1].replace("-", "<br>");
+                                break;
+                            default:
+                                ouText[jCol] = txCl.toString();
+                                break;
+                        }
                     }
+                } catch (Exception e){
+                    Log.e("GET Cell Data", " Error: "+e.getLocalizedMessage());
+                    txtStatus.setText(R.string.lblErrorInCells);
                 }
 
                 if(lessNotEmpty) {
