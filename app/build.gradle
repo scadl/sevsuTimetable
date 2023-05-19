@@ -10,8 +10,8 @@ android {
         applicationId "net.scadsdnd.sevsu_timetable"
         minSdk 26
         targetSdk 33
-        versionCode 4
-        versionName "по моим правилам"
+        versionCode 5
+        versionName "лучшее - враг хорошего ;)"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -5,41 +5,27 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.IdRes;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
 import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -48,9 +34,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -103,6 +87,14 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Configuring titleBar style
+        ActionBar acBar = getSupportActionBar();
+        acBar.setIcon(R.drawable.ic_launcher_foreground);
+        acBar.setBackgroundDrawable(getDrawable(R.drawable.background_wide));
+        acBar.setDisplayUseLogoEnabled(true);
+        acBar.setDisplayShowHomeEnabled(true);
+
+
         ttCurrent = new timeTableType();
         ttCurrent.loadType(1);
 
@@ -144,6 +136,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             }
         });
+        spinType.setEnabled(false);
+        spinType.setClickable(false);
 
         ImageButton btnDownload = (ImageButton) findViewById(R.id.btnUpdateFile);
         btnDownload.setOnClickListener(new View.OnClickListener() {
@@ -185,8 +179,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
                         loadWeeks();
 
+                        Log.w("tag_intent_data", result.getData().toString() );
+
                     }
-                    Log.w("tag_intent_data", result.getData().toString() );
+
                 }
             }
     );
@@ -408,8 +404,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             for(int iStr=0; iStr<=ttCurrent.dayWidthInCells; iStr++) {
 
-                int rowDayStart = (ttCurrent.dayHeightInCelss+1)*indDay;
-                XSSFRow txRw = txSh.getRow(ttCurrent.groupsString+3+rowDayStart + iStr);
+                int rowDayStart = (ttCurrent.dayHeightInCelss + 1) * indDay;
+                XSSFRow txRw = txSh.getRow(ttCurrent.groupsString + 3 + rowDayStart + iStr);
 
                 int lesson_id = 1;
                 boolean lessNotEmpty = false;
